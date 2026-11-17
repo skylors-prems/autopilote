@@ -1,0 +1,62 @@
+{
+  "name": "autopilote",
+  "version": "0.2.0",
+  "description": "Mode autonome pour n'importe quel projet : tu donnes un objectif, Claude découpe en tâches, les fait une à une et en ajoute jusqu'au bout, au rythme de ton forfait.",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "intervalle_minutes": {
+      "type": "number",
+      "title": "Intervalle (minutes)",
+      "description": "Toutes les combien de minutes l'autopilote vérifie s'il doit relancer Claude.",
+      "default": 15
+    },
+    "fichier": {
+      "type": "string",
+      "title": "Fichier de suivi",
+      "description": "Fichier du projet qui tient l'objectif et la liste des tâches (chemin relatif au projet). Créé par /autopilote objectif s'il n'existe pas.",
+      "default": "AUTOPILOTE.md"
+    },
+    "consigne_extra": {
+      "type": "string",
+      "title": "Consignes en plus",
+      "description": "Ajoutées au message envoyé à chaque relance (ex. : « fais un push après chaque tâche », « écris en anglais »). Vide par défaut.",
+      "default": ""
+    },
+    "rythme": {
+      "type": "string",
+      "title": "Rythme",
+      "description": "semaine : étaler le forfait sur la semaine. 5h : étaler sur chaque fenêtre de 5 h. aucun : relancer à chaque fois.",
+      "options": [
+        "semaine",
+        "5h",
+        "aucun"
+      ],
+      "default": "semaine"
+    },
+    "cible_semaine": {
+      "type": "number",
+      "title": "Objectif de la semaine (%)",
+      "description": "Pourcentage du forfait hebdomadaire à atteindre à la remise à zéro. Arrivé là, l'autopilote s'arrête.",
+      "default": 90
+    },
+    "plafond_5h": {
+      "type": "number",
+      "title": "Plafond de la fenêtre de 5 h (%)",
+      "description": "Au-dessus, l'autopilote attend la remise à zéro de la fenêtre.",
+      "default": 95
+    },
+    "avance_max": {
+      "type": "number",
+      "title": "Avance tolérée (points)",
+      "description": "Si tu consommes plus vite que prévu de plus de ce nombre de points, l'autopilote saute la relance.",
+      "default": 3
+    },
+    "demarrer_seul": {
+      "type": "boolean",
+      "title": "Démarrer à l'ouverture de session",
+      "description": "Lancer l'autopilote dès qu'une session commence.",
+      "default": false
+    }
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "autopilote",
+  "owner": { "name": "skylors-prems" },
+  "description": "Autopilote : mode autonome pour Claude Code. Un objectif, des tâches, jusqu'au bout, au rythme de ton forfait.",
+  "plugins": [{ "name": "autopilote", "source": "./" }]
+}
