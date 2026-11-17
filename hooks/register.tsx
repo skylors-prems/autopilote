@@ -30,6 +30,8 @@ type Reglages = {
   plafond: number
   avanceMax: number
   demarrerSeul: boolean
+  source: 'anthropic' | 'adresse' | 'aucune'
+  adresse: string
 }
 
 function lireReglages(o: PluginOptions): Reglages {
@@ -44,6 +46,8 @@ function lireReglages(o: PluginOptions): Reglages {
     plafond: Math.min(100, Math.max(1, n(o.plafond_5h, 95))),
     avanceMax: Math.max(0, n(o.avance_max, 3)),
     demarrerSeul: o.demarrer_seul === true,
+    source: o.source_forfait === 'adresse' || o.source_forfait === 'aucune' ? o.source_forfait : 'anthropic',
+    adresse: String(o.adresse_forfait ?? '').trim(),
   }
 }
 
@@ -157,9 +161,17 @@ async function fixerObjectif($: EngineInterface, objectif: string): Promise<stri
 }
 
 async function lireForfait($: EngineInterface): Promise<AutopiloteUsage | null> {
-  const auth = await $.session.authorize()
-  if (auth === null || auth.kind !== 'bearer') return null
-  const rep = await $.http.fetch(USAGE_URL, { auth: auth.handle, headers: { 'anthropic-beta': 'oauth-2025-04-20' } })
+  if (reglages.source === 'aucune') return null
+  let rep
+  if (reglages.source === 'adresse') {
+    // Adresse de l'utilisateur : jamais de connexion envoyée, https seulement.
+    if (!/^https:\/\//i.test(reglages.adresse)) return null
+    rep = await $.http.fetch(reglages.adresse)
+  } else {
+    const auth = await $.session.authorize()
+    if (auth === null || auth.kind !== 'bearer') return null
+    rep = await $.http.fetch(USAGE_URL, { auth: auth.handle, headers: { 'anthropic-beta': 'oauth-2025-04-20' } })
+  }
   if (!rep.ok) return null
   const d = JSON.parse(rep.text) as Record<string, { utilization?: number; resets_at?: string } | null>
   const cinq = d.five_hour
@@ -390,7 +402,11 @@ export const register: Register = (on, options) => {
         <Box flexDirection="column">
           <Text bold>Forfait</Text>
           {u === null
-            ? <Text dimColor>Pas encore lu. (Il faut être connecté avec un abonnement Claude ; avec une clé d'API, l'autopilote relance sans regarder le forfait.)</Text>
+            ? <Text dimColor>{reglages.source === 'aucune'
+                ? 'Lecture du forfait désactivée : relance à chaque intervalle.'
+                : reglages.source === 'adresse'
+                  ? 'Pas encore lu à ton adresse (https, format JSON : voir le README).'
+                  : "Pas encore lu. (Il faut être connecté avec un abonnement Claude ; avec une clé d'API, l'autopilote relance sans regarder le forfait.)"}</Text>
             : <Box flexDirection="column">
                 <Progress label="Fenêtre de 5 h" value={u.cinq} max={100} valueText={`${Math.round(u.cinq)} % · remise à zéro ${heure(u.resetCinq)}`} color={u.cinq >= reglages.plafond ? 'error' : undefined} />
                 <Progress label="Semaine" value={u.semaine} max={100} valueText={`${Math.round(u.semaine)} % · remise à zéro ${jourHeure(u.resetSemaine)}`} />
@@ -412,6 +428,17 @@ export const register: Register = (on, options) => {
               { value: 'aucun', label: 'Relancer à chaque fois' },
             ]}
             onSelect={v => changer('rythme', v)} />
+          <Select key="source" label="Forfait lu " value={reglages.source}
+            options={[
+              { value: 'anthropic', label: 'Sur mon abonnement Claude' },
+              { value: 'adresse', label: 'À mon adresse' },
+              { value: 'aucune', label: 'Jamais (pas de rythme)' },
+            ]}
+            onSelect={v => changer('source_forfait', v)} />
+          {reglages.source === 'adresse' && (
+            <Input key="adresse" label="Adresse https " placeholder="https://…/forfait.json" value={reglages.adresse}
+              submitLabel="enregistrer" onSubmit={v => changer('adresse_forfait', v.trim())} />
+          )}
           <Box flexDirection="row" gap={1}>
             <Text>Toutes les {reglages.intervalle} min</Text>
             <Button key="int-moins" onPress={() => pas('intervalle_minutes', reglages.intervalle, -5, 1, 240)}>−5</Button>

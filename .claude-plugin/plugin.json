@@ -1,6 +1,6 @@
 {
   "name": "autopilote",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Mode autonome pour n'importe quel projet : tu donnes un objectif, Claude découpe en tâches, les fait une à une et en ajoute jusqu'au bout, au rythme de ton forfait.",
   "types": "./types/index.d.ts",
   "userConfig": {
@@ -20,6 +20,23 @@
       "type": "string",
       "title": "Consignes en plus",
       "description": "Ajoutées au message envoyé à chaque relance (ex. : « fais un push après chaque tâche », « écris en anglais »). Vide par défaut.",
+      "default": ""
+    },
+    "source_forfait": {
+      "type": "string",
+      "title": "Lecture du forfait",
+      "description": "anthropic : lire le forfait de ton abonnement Claude (adresse non documentée d'Anthropic). adresse : lire un fichier JSON à ton adresse (sans jamais y envoyer ta connexion). aucune : ne rien lire, pas de rythme.",
+      "options": [
+        "anthropic",
+        "adresse",
+        "aucune"
+      ],
+      "default": "anthropic"
+    },
+    "adresse_forfait": {
+      "type": "string",
+      "title": "Adresse du forfait",
+      "description": "Avec « adresse » : URL https qui renvoie {\"five_hour\":{\"utilization\":42,\"resets_at\":\"…\"},\"seven_day\":{…}}. Ta connexion Claude n'y est jamais envoyée.",
       "default": ""
     },
     "rythme": {

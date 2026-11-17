@@ -39,13 +39,13 @@ Already have a task list (`TODO.md` with checkboxes)? Set it as the "Fichier de 
 | `/autopilote maintenant` | relaunch now |
 | `/autopilote etat` | one-line summary |
 
-Settings (panel or `/config`): interval (15 min), tracking file, extra instructions, pacing (week / 5h / none), weekly target (90 %), 5-hour ceiling (95 %), tolerated lead (3 points), start with every session.
+Settings (panel or `/config`): usage source (`anthropic` / `adresse` = your own https JSON URL, never sent your login / `aucune` = off), interval (15 min), tracking file, extra instructions, pacing (week / 5h / none), weekly target (90 %), 5-hour ceiling (95 %), tolerated lead (3 points), start with every session.
 
 ## Privacy
 
 - Your login is only sent to `api.anthropic.com`, through an opaque handle: the plugin never sees the token.
 - Every relaunch tells Claude not to write personal data (names, addresses, emails, passwords, keys) into files or commits, and not to send, publish or push anything you did not ask for. No telemetry, no third-party server.
-- The usage endpoint is not officially documented: if it changes, Autopilote keeps working without pacing.
+- The usage endpoint is not officially documented: if it changes, Autopilote keeps working without pacing. You can turn usage reading off, or point it to your own https URL returning `{"five_hour":{"utilization":42,"resets_at":"…"},"seven_day":{…}}`; your Claude login is never sent there.
 
 ## Credits
 

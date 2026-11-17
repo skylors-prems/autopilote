@@ -68,11 +68,25 @@ Tout se règle dans le panneau, ou dans `/config` :
 | Intervalle (minutes) | 15 | fréquence des vérifications |
 | Fichier de suivi | `AUTOPILOTE.md` | objectif, tâches et journal |
 | Consignes en plus | (vide) | ajoutées à chaque relance, ex. « fais un push après chaque tâche » |
+| Lecture du forfait | anthropic | `anthropic` : ton abonnement Claude ; `adresse` : ton propre fichier JSON ; `aucune` : ne rien lire (relance à chaque intervalle) |
+| Adresse du forfait | (vide) | avec `adresse` : une URL https |
 | Rythme | semaine | `semaine` : étaler sur la semaine ; `5h` : sur chaque fenêtre de 5 h ; `aucun` : relancer à chaque fois |
 | Objectif de la semaine | 90 % | arrêt une fois atteint |
 | Plafond de 5 h | 95 % | au-dessus, attente de la remise à zéro |
 | Avance tolérée | 3 points | si tu consommes plus vite que prévu, la relance est sautée |
 | Démarrer à chaque session | non | lancer l'autopilote dès l'ouverture |
+
+## Lire le forfait autrement
+
+Par défaut, le forfait est lu sur une adresse d'Anthropic qui n'est pas documentée officiellement. Tu peux :
+
+- **la couper** : réglage « Lecture du forfait » sur `aucune`. Plus aucune requête ; l'autopilote relance à chaque intervalle.
+- **utiliser ta propre adresse** : `adresse`, avec une URL https qui renvoie ce JSON (pourcentages de 0 à 100, dates ISO) :
+  ```json
+  { "five_hour": { "utilization": 42, "resets_at": "2026-11-18T03:00:00Z" },
+    "seven_day": { "utilization": 37, "resets_at": "2026-11-21T19:00:00Z" } }
+  ```
+  Ta connexion Claude n'y est **jamais** envoyée (Claude Code ne la joint de toute façon qu'aux serveurs d'Anthropic).
 
 ## Vie privée et sécurité
 

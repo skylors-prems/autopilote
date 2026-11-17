@@ -30,7 +30,7 @@ Objectif : un site de recettes
 `
 
 /** Le monde sous le plugin : fichiers du projet, connexion, forfait (semaine à mi-parcours), relances reçues. */
-function monde(on: On, semaine: number, cinq = 20, suivi: string | null = SUIVI) {
+function monde(on: On, semaine: number, cinq = 20, suivi: string | null = SUIVI, reseau = true) {
   const relances: string[] = []
   const fichiers = new Map<string, string>()
   if (suivi !== null) fichiers.set('AUTOPILOTE.md', suivi)
@@ -47,8 +47,8 @@ function monde(on: On, semaine: number, cinq = 20, suivi: string | null = SUIVI)
     fichiers.set(nom(e.path), e.text)
     return { value: undefined }
   })
-  on('session.authorize', () => ({ value: { handle: 'poignee', kind: 'bearer' } }))
-  on('http.fetch', (_, e) => {
+  if (reseau) on('session.authorize', () => ({ value: { handle: 'poignee', kind: 'bearer' } }))
+  if (reseau) on('http.fetch', (_, e) => {
     expect(e.url).toBe('https://api.anthropic.com/api/oauth/usage')
     const corps = {
       five_hour: { utilization: cinq, resets_at: new Date(MAINTENANT + 2 * 3_600_000).toISOString() },
@@ -124,4 +124,37 @@ test('le panneau se dessine partout', OPTIONS, async ($, on) => {
     expect(await ui.find({ type: 'Text', text: /Prévu à cette heure/ })).toBeDefined()
     await ui.unmount()
   }
+})
+
+test('forfait désactivé : aucune requête, relance quand même', { options: { demarrer_seul: true, source_forfait: 'aucune' } }, async ($, on) => {
+  const { relances } = monde(on, 99, 99, SUIVI, false)
+  let requetes = 0
+  on('http.fetch', () => {
+    requetes++
+    return { value: { status: 500, ok: false, headers: {}, text: '' } }
+  })
+  await $.session.start(DEBUT)
+  expect(requetes).toBe(0)
+  expect(relances.length).toBe(1)
+})
+
+test('adresse perso : lue sans la connexion Claude', { options: { demarrer_seul: true, source_forfait: 'adresse', adresse_forfait: 'https://exemple.org/forfait.json' } }, async ($, on) => {
+  const { relances } = monde(on, 40, 20, SUIVI, false)
+  const vues: { url: string; auth: unknown }[] = []
+  on('session.authorize', () => {
+    throw new Error('la connexion ne doit pas être demandée')
+  })
+  on('http.fetch', (_, e) => {
+    vues.push({ url: e.url, auth: e.init?.auth })
+    const corps = {
+      five_hour: { utilization: 20, resets_at: new Date(MAINTENANT + 2 * 3_600_000).toISOString() },
+      seven_day: { utilization: 40, resets_at: new Date(MAINTENANT + 3.5 * JOUR).toISOString() },
+    }
+    return { value: { status: 200, ok: true, headers: {}, text: JSON.stringify(corps) } }
+  })
+  await $.session.start(DEBUT)
+  expect(vues.length).toBe(1)
+  expect(vues[0]?.url).toBe('https://exemple.org/forfait.json')
+  expect(vues[0]?.auth).toBeUndefined()
+  expect(relances[0]).toContain('semaine 40 %')
 })
