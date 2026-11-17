@@ -2,7 +2,7 @@
 
 Tu donnes un **objectif** à Claude ; l'autopilote le fait travailler tout seul jusqu'au bout. Claude découpe l'objectif en tâches, les fait une par une, les vérifie, en ajoute quand la liste est vide, et s'arrête quand l'objectif est atteint. L'autopilote surveille ton forfait Claude (fenêtre de 5 h et semaine) pour **étaler ta consommation** au lieu de tout brûler d'un coup.
 
-*English: an autonomous mode for Claude Code. Give it a goal; Claude splits it into tasks in `AUTOPILOTE.md`, does them one by one, adds new ones until the goal is met, and paces itself on your plan usage. UI and messages are in French.*
+*English: an autonomous mode for Claude Code. → [README in English](README.en.md)*
 
 ## Où ça marche
 
@@ -83,6 +83,6 @@ Tout se règle dans le panneau, ou dans `/config` :
 - Il ne relance jamais pendant que Claude travaille, et une seule relance attend à la fois.
 - Le forfait est lu sur une adresse d'Anthropic qui n'est pas documentée officiellement : si elle change, l'autopilote continue sans le rythme.
 
-## Licence
+## Crédits
 
-MIT.
+Écrit avec [Claude](https://claude.com/claude-code) (Anthropic). Licence MIT.
